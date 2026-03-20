@@ -7,7 +7,6 @@ import Server from '@/lib/models/Server';
 import User from '@/lib/models/User';
 
 export const dynamic = 'force-dynamic';
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function GET(req: NextRequest) {
   const serverId = req.nextUrl.searchParams.get('serverId');
@@ -28,6 +27,7 @@ export async function POST(req: NextRequest) {
     const server = await Server.findByPk(serverId);
     if (!server) return NextResponse.json({ error: 'Server not found' }, { status: 422 });
 
+    const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
       from: process.env.EMAIL_FROM ?? '',
       to: email,
