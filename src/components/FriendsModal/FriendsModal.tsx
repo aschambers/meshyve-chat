@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Friend } from '@/lib/types';
 import type { FriendRequest } from '@/lib/redux/modules/friendRequests/friendRequests';
+import Tooltip from '@/components/Tooltip/Tooltip';
 
 type Tab = 'online' | 'all' | 'pending';
 
@@ -129,7 +130,7 @@ export default function FriendsModal({
                 <div key={req.id} className="flex items-center gap-3 rounded-lg px-2 py-3 hover:bg-gray-700">
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-900 ring-1 ring-gray-600 text-sm font-bold text-white">
                     {req.senderImageUrl
-                      ? <img src={req.senderImageUrl} alt={req.senderUsername} className="h-full w-full object-cover" />
+                      ? <img src={req.senderImageUrl} alt={req.senderUsername} className="h-full w-full object-cover" loading="eager" />
                       : req.senderUsername[0]?.toUpperCase()
                     }
                   </div>
@@ -137,20 +138,22 @@ export default function FriendsModal({
                     <p className="font-semibold text-white truncate">{req.senderUsername}</p>
                     <p className="text-xs text-gray-400">Incoming friend request</p>
                   </div>
-                  <button
-                    onClick={() => onAcceptRequest(req.id)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-green-400 hover:bg-green-600 hover:text-white transition-colors"
-                    title="Accept"
-                  >
-                    ✓
-                  </button>
-                  <button
-                    onClick={() => onDeclineRequest(req.id)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-gray-400 hover:bg-red-600 hover:text-white transition-colors"
-                    title="Decline"
-                  >
-                    ✕
-                  </button>
+                  <Tooltip text="Accept">
+                    <button
+                      onClick={() => onAcceptRequest(req.id)}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-green-400 hover:bg-green-600 hover:text-white transition-colors"
+                    >
+                      ✓
+                    </button>
+                  </Tooltip>
+                  <Tooltip text="Decline">
+                    <button
+                      onClick={() => onDeclineRequest(req.id)}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-gray-400 hover:bg-red-600 hover:text-white transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </Tooltip>
                 </div>
               ))
             )
@@ -165,7 +168,7 @@ export default function FriendsModal({
                 <div className="relative flex-shrink-0">
                   <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gray-900 ring-1 ring-gray-600 text-sm font-bold text-white">
                     {f.imageUrl
-                      ? <img src={f.imageUrl} alt={f.username} className="h-full w-full object-cover" />
+                      ? <img src={f.imageUrl} alt={f.username} className="h-full w-full object-cover" loading="eager" />
                       : f.username[0]?.toUpperCase()
                     }
                   </div>
@@ -180,20 +183,22 @@ export default function FriendsModal({
 
                 {/* Actions */}
                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => { onMessage(f); onClose(); }}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-gray-300 hover:bg-yellow-500 hover:text-gray-900 transition-colors"
-                    title="Message"
-                  >
-                    💬
-                  </button>
-                  <button
-                    onClick={() => onUnfriend(f.friendId!)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-gray-300 hover:bg-red-600 hover:text-white transition-colors"
-                    title="Remove Friend"
-                  >
-                    ✕
-                  </button>
+                  <Tooltip text="Message">
+                    <button
+                      onClick={() => { onMessage(f); onClose(); }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-gray-300 hover:bg-yellow-500 hover:text-gray-900 transition-colors"
+                    >
+                      💬
+                    </button>
+                  </Tooltip>
+                  <Tooltip text="Remove Friend">
+                    <button
+                      onClick={() => onUnfriend(f.friendId!)}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-gray-300 hover:bg-red-600 hover:text-white transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </Tooltip>
                 </div>
               </div>
             ))

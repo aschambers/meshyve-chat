@@ -14,6 +14,7 @@ interface Props {
     email?: string;
     imageUrl?: string;
     nameColor?: string | null;
+    description?: string | null;
   }) => void;
 }
 
@@ -71,6 +72,7 @@ export default function UserSettings({ user, onClose, onSaved }: Props) {
   const [imagePreview, setImagePreview] = useState(user.imageUrl ?? "");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [nameColor, setNameColor] = useState<string>(user.nameColor ?? "");
+  const [description, setDescription] = useState<string>(user.description ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -122,6 +124,7 @@ export default function UserSettings({ user, onClose, onSaved }: Props) {
     formData.append("email", email.trim());
     if (imageFile) formData.append("imageUrl", imageFile);
     formData.append("nameColor", nameColor);
+    formData.append("description", description);
 
     const result = await dispatch(userUpdate(formData));
     setSaving(false);
@@ -132,6 +135,7 @@ export default function UserSettings({ user, onClose, onSaved }: Props) {
         email: email.trim(),
         imageUrl: imagePreview || undefined,
         nameColor: nameColor || null,
+        description: description || null,
       });
       onClose();
     } else {
@@ -310,6 +314,21 @@ export default function UserSettings({ user, onClose, onSaved }: Props) {
                       This color may be hard to read on the dark background.
                     </p>
                   )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-gray-400">
+                    Description
+                  </label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 190) setDescription(e.target.value);
+                    }}
+                    rows={3}
+                    placeholder="Tell others a bit about yourself…"
+                    className="w-full resize-none rounded bg-gray-700 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-yellow-400 placeholder-gray-500"
+                  />
+                  <p className="mt-0.5 text-right text-xs text-gray-500">{description.length}/190</p>
                 </div>
               </div>
 

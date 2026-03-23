@@ -1,0 +1,33 @@
+<svg width="100%" viewBox="0 0 680 420" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <clipPath id="bc">
+    <path d="M180,100 Q180,60 220,60 L460,60 Q500,60 500,100 L500,280 Q500,320 460,320 L270,320 L228,368 L228,320 L220,320 Q180,320 180,280 Z"/>
+  </clipPath>
+</defs>
+<path d="M186,106 Q186,66 226,66 L466,66 Q506,66 506,106 L506,286 Q506,326 466,326 L276,326 L234,374 L234,326 L226,326 Q186,326 186,286 Z" style="fill:rgb(196, 112, 16);stroke:none;opacity:0.35"/>
+<path d="M180,100 Q180,60 220,60 L460,60 Q500,60 500,100 L500,280 Q500,320 460,320 L270,320 L228,368 L228,320 L220,320 Q180,320 180,280 Z" style="fill:rgb(242, 166, 35);stroke:none;opacity:1"/>
+<g clip-path="url(#bc)" style="fill:none;stroke:rgb(26, 22, 16);stroke-width:2px;opacity:0.18">
+  <polygon points="207,261 224,251 241,261 241,281 224,291 207,281"/>
+  <polygon points="241,261 258,251 275,261 275,281 258,291 241,281"/>
+  <polygon points="224,291 241,281 258,291 258,311 241,321 224,311"/>
+  <polygon points="258,291 275,281 292,291 292,311 275,321 258,311"/>
+  <polygon points="275,261 292,251 309,261 309,281 292,291 275,281"/>
+</g>
+<circle cx="340" cy="185" r="10" style="fill:rgb(26, 22, 16);stroke:none;opacity:1"/>
+<circle cx="340" cy="185" r="5" style="fill:rgb(242, 166, 35);stroke:none;opacity:1"/>
+<path d="M314,159 A37,37 0 0 1 366,159" stroke="rgb(26, 22, 16)" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.92"/>
+<path d="M296,141 A60,60 0 0 1 384,141" stroke="rgb(26, 22, 16)" stroke-width="2.8" stroke-linecap="round" fill="none" opacity="0.62"/>
+<path d="M277,122 A86,86 0 0 1 403,122" stroke="rgb(26, 22, 16)" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.35"/>
+<g stroke="rgb(26, 22, 16)" stroke-width="1" stroke-linecap="round" fill="none" opacity="0.15">
+  <line x1="340" y1="185" x2="260" y2="210"/>
+  <line x1="340" y1="185" x2="420" y2="210"/>
+  <line x1="340" y1="185" x2="300" y2="240"/>
+  <line x1="340" y1="185" x2="380" y2="240"/>
+</g>
+<g fill="rgb(26, 22, 16)" opacity="0.3">
+  <circle cx="260" cy="210" r="3.5"/>
+  <circle cx="420" cy="210" r="3.5"/>
+  <circle cx="300" cy="240" r="3.5"/>
+  <circle cx="380" cy="240" r="3.5"/>
+</g>
+</svg>

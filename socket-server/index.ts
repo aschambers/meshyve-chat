@@ -424,19 +424,30 @@ sequelize.sync().then(() => {
 
     // ── Voice channels ────────────────────────────────────────────────────
     socket.on('JOIN_VOICE', ({ username, chatroomId, room }: { username: string; chatroomId: number; room: string }) => {
-      const users = voiceChannels.get(chatroomId) ?? [];
+      // Deduplicate: remove any stale entry for this user before adding
+      const users = (voiceChannels.get(chatroomId) ?? []).filter(u => u.username !== username);
       socket.emit('VOICE_USERS', users.map(u => u.username));
       users.push({ username, socketId: socket.id, room });
       voiceChannels.set(chatroomId, users);
       socket.join(room);
       socket.to(room).emit('VOICE_USER_JOINED', { username });
+      io.emit('VOICE_STATE_CHANGED', { chatroomId, users: users.map(u => u.username) });
     });
 
     socket.on('LEAVE_VOICE', ({ username, chatroomId, room }: { username: string; chatroomId: number; room: string }) => {
-      const users = voiceChannels.get(chatroomId) ?? [];
-      voiceChannels.set(chatroomId, users.filter(u => u.socketId !== socket.id));
+      const remaining = (voiceChannels.get(chatroomId) ?? []).filter(u => u.socketId !== socket.id);
+      voiceChannels.set(chatroomId, remaining);
       socket.leave(room);
       socket.to(room).emit('VOICE_USER_LEFT', { username });
+      io.emit('VOICE_STATE_CHANGED', { chatroomId, users: remaining.map(u => u.username) });
+    });
+
+    socket.on('GET_VOICE_PARTICIPANTS', ({ chatroomIds }: { chatroomIds: number[] }) => {
+      const result: Record<number, string[]> = {};
+      for (const cid of chatroomIds) {
+        result[cid] = (voiceChannels.get(cid) ?? []).map(u => u.username);
+      }
+      socket.emit('VOICE_PARTICIPANTS', result);
     });
 
     socket.on('VOICE_OFFER', ({ to, from, desc, chatroomId }: { to: string; from: string; desc: RTCSessionDescriptionInit; chatroomId: number }) => {
@@ -454,12 +465,20 @@ sequelize.sync().then(() => {
       if (target) io.to(target.socketId).emit('VOICE_ICE', { from, candidate });
     });
 
+    socket.on('VOICE_DEAFEN', ({ username, chatroomId, deafened }: { username: string; chatroomId: number; deafened: boolean }) => {
+      const room = (voiceChannels.get(chatroomId) ?? []).find(u => u.username === username)?.room;
+      if (room) socket.to(room).emit('VOICE_DEAFEN', { username, deafened });
+    });
+
     socket.on('disconnect', () => {
       voiceChannels.forEach((channelUsers, chatroomId) => {
+        // Clean up by both socketId AND username to catch stale entries
         const user = channelUsers.find(u => u.socketId === socket.id);
         if (user) {
-          voiceChannels.set(chatroomId, channelUsers.filter(u => u.socketId !== socket.id));
-          socket.to(user.room).emit('VOICE_USER_LEFT', { username: user.username });
+          const remaining = channelUsers.filter(u => u.socketId !== socket.id);
+          voiceChannels.set(chatroomId, remaining);
+          io.to(user.room).emit('VOICE_USER_LEFT', { username: user.username });
+          io.emit('VOICE_STATE_CHANGED', { chatroomId, users: remaining.map(u => u.username) });
         }
       });
     });

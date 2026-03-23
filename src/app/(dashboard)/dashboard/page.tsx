@@ -29,7 +29,7 @@ export default async function DashboardPage() {
 
   return (
     <DashboardClient
-      initialUser={{ ...session, imageUrl: user?.imageUrl ?? null, nameColor: user?.nameColor ?? session.nameColor ?? null }}
+      initialUser={{ ...session, imageUrl: user?.imageUrl ?? null, nameColor: user?.nameColor ?? session.nameColor ?? null, description: user?.description ?? null }}
       initialServers={initialServers}
       initialActiveServer={initialActiveServer}
       initialPendingChatroomId={initialPendingChatroomId}

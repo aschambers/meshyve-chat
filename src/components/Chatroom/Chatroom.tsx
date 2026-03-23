@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import { getSocket } from "@/lib/socket";
 import type { ServerUser, Message } from "@/lib/types";
 import UserProfileModal from "@/components/UserProfileModal/UserProfileModal";
+import Tooltip from "@/components/Tooltip/Tooltip";
 
 type UserStatus = "online" | "away" | "busy" | "offline";
 
@@ -34,6 +35,8 @@ interface Props {
   onAddFriend?: (userId: number) => void;
   onAcceptRequest?: (requestId: number) => void;
   onUnfriend?: (userId: number) => void;
+  serverImageUrl?: string | null;
+  serverName?: string;
 }
 
 interface ProfileTarget {
@@ -74,6 +77,8 @@ export default function Chatroom({
   onAddFriend,
   onAcceptRequest,
   onUnfriend,
+  serverImageUrl,
+  serverName,
 }: Props) {
   const socket = getSocket();
 
@@ -608,18 +613,19 @@ export default function Chatroom({
           <span className="flex-1 cursor-pointer" onClick={startCall}>
             {activeChatroom}
           </span>
-          <button
-            onClick={() => setShowPinnedPanel((v) => !v)}
-            className={`flex items-center justify-center h-8 w-8 rounded hover:bg-gray-600 text-lg ${showPinnedPanel ? 'text-yellow-400' : 'text-gray-400 hover:text-white'}`}
-            title="Pinned messages"
-          >
-            📌
-          </button>
-          <button
-            onClick={() => setShowMobileMembers((v) => !v)}
-            className="md:hidden flex items-center justify-center h-8 w-8 rounded bg-gray-600 hover:bg-gray-500 text-white"
-            title="Members"
-          >
+          <Tooltip text="Pinned messages" position="bottom">
+            <button
+              onClick={() => setShowPinnedPanel((v) => !v)}
+              className={`flex items-center justify-center h-8 w-8 rounded hover:bg-gray-600 text-lg ${showPinnedPanel ? 'text-yellow-400' : 'text-gray-400 hover:text-white'}`}
+            >
+              📌
+            </button>
+          </Tooltip>
+          <Tooltip text="Members" position="bottom">
+            <button
+              onClick={() => setShowMobileMembers((v) => !v)}
+              className="md:hidden flex items-center justify-center h-8 w-8 rounded bg-gray-600 hover:bg-gray-500 text-white"
+            >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -636,7 +642,8 @@ export default function Chatroom({
               <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
-          </button>
+            </button>
+          </Tooltip>
         </div>
 
         {/* Messages */}
@@ -698,6 +705,7 @@ export default function Chatroom({
                           src={senderImage}
                           alt={item.username}
                           className="h-full w-full object-cover"
+                          loading="eager"
                         />
                       ) : (
                         item.username[0]?.toUpperCase()
@@ -876,6 +884,18 @@ export default function Chatroom({
                                   {emoji} {userIds.length}
                                 </button>
                               ))}
+                              <div className="relative group">
+                                <button
+                                  onClick={() => setReactionPickerMessageId(id => id === item.id ? null : item.id)}
+                                  className="flex items-center text-xs px-2 py-0.5 rounded-full border border-gray-600 bg-gray-700 hover:border-gray-400 transition-colors"
+                                  style={{ filter: 'grayscale(1)', opacity: 0.6 }}
+                                >
+                                  😊
+                                </button>
+                                <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                                  Add reaction
+                                </span>
+                              </div>
                             </div>
                           )}
                           {threadCounts[item.id] > 0 && (
@@ -900,28 +920,31 @@ export default function Chatroom({
                     {hover === msgKey && (
                       <div className="self-start flex items-center gap-1 flex-shrink-0">
                         {isAdmin && (
-                          <button
-                            className={`px-1 text-sm ${item.isPinned ? 'text-yellow-400' : 'text-gray-400 hover:text-yellow-400'}`}
-                            title={item.isPinned ? 'Unpin message' : 'Pin message'}
-                            onClick={() => togglePin(item.id)}
-                          >
-                            📌
-                          </button>
+                          <Tooltip text={item.isPinned ? 'Unpin message' : 'Pin message'}>
+                            <button
+                              className={`px-1 text-sm ${item.isPinned ? 'text-yellow-400' : 'text-gray-400 hover:text-yellow-400'}`}
+                              onClick={() => togglePin(item.id)}
+                            >
+                              📌
+                            </button>
+                          </Tooltip>
                         )}
-                        <button
-                          className="text-gray-400 hover:text-white px-1"
-                          title="React"
-                          onClick={() => setReactionPickerMessageId(id => id === item.id ? null : item.id)}
-                        >
-                          😊
-                        </button>
-                        <button
-                          className="text-gray-400 hover:text-white px-1"
-                          title="Open thread"
-                          onClick={() => openThread(item)}
-                        >
-                          💬
-                        </button>
+                        <Tooltip text="React">
+                          <button
+                            className="text-gray-400 hover:text-white px-1"
+                            onClick={() => setReactionPickerMessageId(id => id === item.id ? null : item.id)}
+                          >
+                            😊
+                          </button>
+                        </Tooltip>
+                        <Tooltip text="Open thread">
+                          <button
+                            className="text-gray-400 hover:text-white px-1"
+                            onClick={() => openThread(item)}
+                          >
+                            💬
+                          </button>
+                        </Tooltip>
                         {(userId === item.userId || canModerate) && (
                           <button
                             className="text-gray-400 hover:text-white px-1"
@@ -969,7 +992,7 @@ export default function Chatroom({
         )}
 
         {/* Input bar */}
-        <div className="flex items-center gap-2 border-t border-gray-600 p-3">
+        <div className="flex items-center gap-2 border-t border-gray-600 px-3 h-14">
           <input
             type="file"
             className="hidden"
@@ -1121,14 +1144,14 @@ export default function Chatroom({
                 <p className="text-xs text-gray-400">Only you can see this thread</p>
               </div>
               <div
-                className={`relative h-5 w-9 rounded-full transition-colors ${newThreadPrivate ? "bg-indigo-500" : "bg-gray-600"}`}
+                className={`relative h-5 w-9 rounded-full transition-colors ${newThreadPrivate ? "bg-yellow-500" : "bg-gray-600"}`}
                 onClick={() => setNewThreadPrivate(p => !p)}
               >
                 <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${newThreadPrivate ? "translate-x-4" : "translate-x-0.5"}`} />
               </div>
             </label>
             <button
-              className="w-full rounded bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-40"
+              className="w-full rounded bg-yellow-500 px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-yellow-600 disabled:opacity-40"
               disabled={!newThreadDraft.trim()}
               onClick={submitNewThread}
             >
@@ -1255,7 +1278,7 @@ export default function Chatroom({
               );
             })}
           </div>
-          <div className="flex items-center gap-2 border-t border-gray-600 p-3">
+          <div className="flex items-center gap-2 border-t border-gray-600 px-3 h-14">
             <input
               className="flex-1 rounded bg-gray-600 px-3 py-2 text-sm outline-none"
               placeholder="Reply in thread…"
@@ -1331,6 +1354,7 @@ export default function Chatroom({
                               src={img}
                               alt={user.username}
                               className="h-full w-full object-cover"
+                              loading="eager"
                             />
                           ) : (
                             user.username[0]?.toUpperCase()
@@ -1408,6 +1432,8 @@ export default function Chatroom({
           onAddFriend={Number(profileTarget.userId) !== Number(userId) ? () => onAddFriend?.(profileTarget.userId) : undefined}
           onAcceptRequest={Number(profileTarget.userId) !== Number(userId) ? onAcceptRequest : undefined}
           onUnfriend={Number(profileTarget.userId) !== Number(userId) ? () => onUnfriend?.(profileTarget.userId) : undefined}
+          serverImageUrl={serverImageUrl}
+          serverName={serverName}
           onSendMessage={
             Number(profileTarget.userId) !== Number(userId)
               ? () => {
@@ -1423,8 +1449,8 @@ export default function Chatroom({
       )}
 
       {confirmModerating && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 px-0 sm:px-4">
-          <div className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl bg-gray-800 p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 px-0 sm:px-4" onClick={() => setConfirmModerating(null)}>
+          <div className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl bg-gray-800 p-6 shadow-xl" onClick={e => e.stopPropagation()}>
             <h3 className="mb-1 text-base font-bold text-white">
               {confirmModerating.action === 'kick' ? 'Kick' : 'Ban'} {confirmModerating.user.username}?
             </h3>

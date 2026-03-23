@@ -18,6 +18,7 @@ export interface JWTPayload {
   type: string;
   isVerified: boolean;
   nameColor?: string | null;
+  description?: string | null;
 }
 
 export async function signToken(payload: JWTPayload): Promise<string> {

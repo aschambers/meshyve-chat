@@ -11,6 +11,7 @@ export interface UserAttributes {
   type: string;
   imageUrl: string | null;
   nameColor: string | null;
+  description: string | null;
   resetPasswordToken: string | null;
   pushNotificationToken: string | null;
   privateMessages: object[];
@@ -23,7 +24,7 @@ export interface UserAttributes {
   updatedAt?: Date;
 }
 
-type UserCreationAttributes = Optional<UserAttributes, 'id' | 'imageUrl' | 'nameColor' | 'resetPasswordToken' | 'pushNotificationToken' | 'privateMessages' | 'personalMessages' | 'chatroomsList' | 'serversList' | 'token'>;
+type UserCreationAttributes = Optional<UserAttributes, 'id' | 'imageUrl' | 'nameColor' | 'description' | 'resetPasswordToken' | 'pushNotificationToken' | 'privateMessages' | 'personalMessages' | 'chatroomsList' | 'serversList' | 'token'>;
 
 class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   declare id: number;
@@ -34,6 +35,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   declare type: string;
   declare imageUrl: string | null;
   declare nameColor: string | null;
+  declare description: string | null;
   declare resetPasswordToken: string | null;
   declare pushNotificationToken: string | null;
   declare privateMessages: object[];
@@ -56,6 +58,7 @@ User.init(
     type: { type: DataTypes.STRING, allowNull: false, defaultValue: 'user' },
     imageUrl: { type: DataTypes.STRING, allowNull: true },
     nameColor: { type: DataTypes.STRING, allowNull: true },
+    description: { type: DataTypes.TEXT, allowNull: true },
     resetPasswordToken: { type: DataTypes.STRING, allowNull: true },
     pushNotificationToken: { type: DataTypes.STRING, allowNull: true },
     privateMessages: { type: DataTypes.ARRAY(DataTypes.JSONB), defaultValue: [], allowNull: true },

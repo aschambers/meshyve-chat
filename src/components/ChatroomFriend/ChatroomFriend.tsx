@@ -7,6 +7,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import { getSocket } from '@/lib/socket';
 import UserProfileModal from '@/components/UserProfileModal/UserProfileModal';
+import Tooltip from '@/components/Tooltip/Tooltip';
 
 interface Message {
   id: number;
@@ -340,11 +341,8 @@ export default function ChatroomFriend({ userId, username, friendUsername, curre
         {!isPersonal && friendReqStatus !== 'friends' && (
           friendReqStatus === 'none' ? (
             <button
-              onClick={() => {
-                if (onAddFriend) onAddFriend();
-                setFriendReqStatus('sent');
-              }}
-              className="rounded px-2 py-0.5 text-xs font-medium bg-teal-600 hover:bg-teal-500 text-white transition-colors"
+              onClick={() => { if (onAddFriend) onAddFriend(); setFriendReqStatus('sent'); }}
+              className="rounded px-2 py-0.5 text-xs font-medium bg-yellow-500 hover:bg-yellow-600 text-gray-900 transition-colors"
             >
               Add Friend
             </button>
@@ -354,10 +352,7 @@ export default function ChatroomFriend({ userId, username, friendUsername, curre
             </span>
           ) : friendReqStatus === 'incoming' ? (
             <button
-              onClick={() => {
-                if (friendReqId !== null && onAcceptRequest) onAcceptRequest(friendReqId);
-                setFriendReqStatus('friends');
-              }}
+              onClick={() => { if (friendReqId !== null && onAcceptRequest) onAcceptRequest(friendReqId); setFriendReqStatus('friends'); }}
               className="rounded px-2 py-0.5 text-xs font-medium bg-green-600 hover:bg-green-500 text-white transition-colors"
             >
               Accept
@@ -416,7 +411,7 @@ export default function ChatroomFriend({ userId, username, friendUsername, curre
                   onClick={() => setProfileTarget({ userId: item.userId, username: item.username })}
                 >
                   {senderImage
-                    ? <img src={senderImage} alt={item.username} className="h-full w-full object-cover" />
+                    ? <img src={senderImage} alt={item.username} className="h-full w-full object-cover" loading="eager" />
                     : item.username[0]?.toUpperCase()
                   }
                 </div>
@@ -548,7 +543,7 @@ export default function ChatroomFriend({ userId, username, friendUsername, curre
       )}
 
       {/* Input bar */}
-      <div className="flex items-center gap-2 border-t border-gray-600 p-3">
+      <div className="flex items-center gap-2 border-t border-gray-600 px-3 h-14">
         <input
           type="file"
           className="hidden"

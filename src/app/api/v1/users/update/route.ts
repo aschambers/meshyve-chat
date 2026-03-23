@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
 
 async function ensureColumns() {
   await sequelize.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "nameColor" VARCHAR(255)`);
+  await sequelize.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS "description" TEXT`);
 }
 
 export async function PUT(req: NextRequest) {
@@ -18,6 +19,7 @@ export async function PUT(req: NextRequest) {
   const email = formData.get('email') as string | null;
   const imageFile = formData.get('imageUrl') as File | null;
   const nameColor = formData.get('nameColor') as string | null;
+  const description = formData.get('description') as string | null;
 
   if (!userId) return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
 
@@ -40,6 +42,7 @@ export async function PUT(req: NextRequest) {
     ...(email ? { email } : {}),
     ...(imageUrl ? { imageUrl } : {}),
     ...(nameColor !== null ? { nameColor: nameColor || null } : {}),
+    ...(description !== null ? { description: description || null } : {}),
   });
   await user.reload();
 
