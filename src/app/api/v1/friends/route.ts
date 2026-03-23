@@ -22,14 +22,14 @@ export async function POST(req: NextRequest) {
 
   const friendFinder = await Friend.findOne({ where: { [Op.and]: [{ userId }, { friendId }] } });
   if (!friendFinder) {
-    await Friend.create({ username, imageUrl, userId, friendId, activeFriend: true, groupId });
+    await Friend.create({ username, imageUrl, userId, friendId, activeFriend: true, groupId, isFriend: false });
   } else {
     await friendFinder.update({ activeFriend: true }, { where: { id: friendFinder.id } });
   }
 
   const userFinder = await Friend.findOne({ where: { [Op.and]: [{ userId: friendId }, { friendId: userId }] } });
   if (!userFinder) {
-    await Friend.create({ username: friendUsername, imageUrl, userId: friendId, friendId: userId, activeFriend: true, groupId });
+    await Friend.create({ username: friendUsername, imageUrl, userId: friendId, friendId: userId, activeFriend: true, groupId, isFriend: false });
   } else {
     await userFinder.update({ activeFriend: true }, { where: { id: userFinder.id } });
   }
