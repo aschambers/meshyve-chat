@@ -5,9 +5,14 @@ import Message from '@/lib/models/Message';
 
 export const dynamic = 'force-dynamic';
 
+async function ensureColumns() {
+  await sequelize.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS "forwardedFrom" JSONB`);
+}
+
 const ORDER: [string, string][] = [['createdAt', 'DESC']];
 
 export async function GET(req: NextRequest) {
+  await ensureColumns();
   const { searchParams } = req.nextUrl;
   const chatroomId = searchParams.get('chatroomId');
   const userId = searchParams.get('userId');

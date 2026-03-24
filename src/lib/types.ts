@@ -40,6 +40,17 @@ export interface Friend {
   isFriend?: boolean;
 }
 
+export interface ForwardedFrom {
+  type: 'channel' | 'dm';
+  chatroomId?: number;
+  chatroomName?: string;
+  serverId?: number;
+  serverName?: string;
+  groupId?: string;
+  username?: string;
+  messageId?: number;
+}
+
 export interface Message {
   id: number;
   username: string;
@@ -54,6 +65,7 @@ export interface Message {
   parentId?: number | null;
   isPrivate?: boolean;
   isPinned?: boolean;
+  forwardedFrom?: ForwardedFrom | null;
 }
 
 export interface Invite {

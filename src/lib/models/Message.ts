@@ -13,11 +13,12 @@ export interface MessageAttributes {
   parentId: number | null;
   isPrivate: boolean;
   isPinned: boolean;
+  forwardedFrom: Record<string, unknown> | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-type MessageCreationAttributes = Optional<MessageAttributes, 'id' | 'friendId' | 'chatroomId' | 'nameColor' | 'reactions' | 'parentId' | 'isPrivate' | 'isPinned'>;
+type MessageCreationAttributes = Optional<MessageAttributes, 'id' | 'friendId' | 'chatroomId' | 'nameColor' | 'reactions' | 'parentId' | 'isPrivate' | 'isPinned' | 'forwardedFrom'>;
 
 class Message extends Model<MessageAttributes, MessageCreationAttributes> implements MessageAttributes {
   declare id: number;
@@ -31,6 +32,7 @@ class Message extends Model<MessageAttributes, MessageCreationAttributes> implem
   declare parentId: number | null;
   declare isPrivate: boolean;
   declare isPinned: boolean;
+  declare forwardedFrom: Record<string, unknown> | null;
   declare createdAt: Date;
   declare updatedAt: Date;
 }
@@ -48,6 +50,7 @@ Message.init(
     parentId: { type: DataTypes.INTEGER, allowNull: true, defaultValue: null },
     isPrivate: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     isPinned: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    forwardedFrom: { type: DataTypes.JSONB, allowNull: true, defaultValue: null },
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, allowNull: false },
     updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, allowNull: false },
   },

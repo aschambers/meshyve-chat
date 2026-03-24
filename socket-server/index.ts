@@ -22,6 +22,7 @@ interface ChatroomMsgData {
   userId: number;
   messageId: number;
   nameColor?: string | null;
+  forwardedFrom?: Record<string, unknown> | null;
 }
 
 interface UserMsgData {
@@ -34,6 +35,7 @@ interface UserMsgData {
   message: string;
   messageId: number;
   nameColor?: string | null;
+  forwardedFrom?: Record<string, unknown> | null;
 }
 
 interface ServerData {
@@ -68,7 +70,8 @@ const voiceChannels = new Map<number, { username: string; socketId: string; room
 // Slowmode: last message timestamp per userId:chatroomId
 const slowmodeTimestamps = new Map<string, number>();
 
-sequelize.sync().then(() => {
+sequelize.sync().then(async () => {
+  await sequelize.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS "forwardedFrom" JSONB`);
   console.log('Socket server DB synced');
 
   async function getChatroomMessages(chatroomId: number, requestingUserId?: number) {
@@ -134,14 +137,28 @@ sequelize.sync().then(() => {
         slowmodeTimestamps.set(key, Date.now());
       }
 
-      await Message.create({
-        username: data.username,
-        message: data.message,
-        userId: data.userId,
-        chatroomId: data.chatroomId,
-        friendId: null,
-        nameColor: data.nameColor ?? null,
-      });
+      try {
+        await Message.create({
+          username: data.username,
+          message: data.message,
+          userId: data.userId,
+          chatroomId: data.chatroomId,
+          friendId: null,
+          nameColor: data.nameColor ?? null,
+          forwardedFrom: data.forwardedFrom ?? null,
+        });
+      } catch (err: unknown) {
+        console.error('CHATROOM_MESSAGE create error:', err);
+        // Column may not exist yet — retry without forwardedFrom
+        await Message.create({
+          username: data.username,
+          message: data.message,
+          userId: data.userId,
+          chatroomId: data.chatroomId,
+          friendId: null,
+          nameColor: data.nameColor ?? null,
+        });
+      }
       const { messages, threadCounts } = await getChatroomMessages(data.chatroomId);
       io.in(data.room).emit('RECEIVE_CHATROOM_MESSAGES', messages);
       io.in(data.room).emit('RECEIVE_THREAD_COUNTS', threadCounts);
@@ -286,7 +303,12 @@ sequelize.sync().then(() => {
     socket.on('SEND_PRIVATE_MESSAGE', async (data: UserMsgData) => {
       const uid = data.userId;
       const fid = data.friendId;
-      await Message.create({ username: data.username, message: data.message, userId: uid, friendId: fid, chatroomId: null, nameColor: data.nameColor ?? null });
+      try {
+        await Message.create({ username: data.username, message: data.message, userId: uid, friendId: fid, chatroomId: null, nameColor: data.nameColor ?? null, forwardedFrom: data.forwardedFrom ?? null });
+      } catch (err: unknown) {
+        console.error('SEND_PRIVATE_MESSAGE create error:', err);
+        await Message.create({ username: data.username, message: data.message, userId: uid, friendId: fid, chatroomId: null, nameColor: data.nameColor ?? null });
+      }
       const messages = await Message.findAll({
         where: {
           [Op.or]: [
