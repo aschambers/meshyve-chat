@@ -12,7 +12,14 @@ import DashboardClient from './DashboardClient';
 
 global.fetch = jest.fn(() => Promise.resolve({ json: () => Promise.resolve([]) })) as jest.Mock;
 
-const user = { id: 1, username: 'user', email: 'user@test.com', nameColor: null, imageUrl: null, description: null };
+const user = {
+  id: 1,
+  username: 'user',
+  email: 'user@test.com',
+  nameColor: null,
+  imageUrl: null,
+  description: null,
+};
 
 it('renders without crashing', () => {
   render(
