@@ -884,7 +884,7 @@ export default function ChatroomFriend({
         />
         <div className="relative">
           <button
-            className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-gray-500 hover:text-white text-lg font-bold leading-none transition-colors"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-gray-500 hover:text-white text-lg font-bold leading-none transition-colors select-none"
             onClick={() => setShowPlusMenu((p) => !p)}
           >
             +
@@ -898,7 +898,21 @@ export default function ChatroomFriend({
                   fileInputRef.current?.click();
                 }}
               >
-                📁 Upload a File
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Upload a File
               </button>
             </div>
           )}

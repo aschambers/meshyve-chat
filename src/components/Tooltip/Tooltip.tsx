@@ -13,10 +13,12 @@ export default function Tooltip({ text, children, position = 'top', className = 
   const [visible, setVisible] = useState(false);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
   const ref = useRef<HTMLDivElement>(null);
+  const justTouched = useRef(false);
 
   const handleMouseEnter = () => {
     if (!ref.current) return;
     if (window.matchMedia('(hover: none)').matches) return;
+    if (justTouched.current) { justTouched.current = false; return; }
     const rect = ref.current.getBoundingClientRect();
     if (position === 'right') {
       setCoords({ x: rect.right + 8, y: rect.top + rect.height / 2 });
@@ -39,6 +41,7 @@ export default function Tooltip({ text, children, position = 'top', className = 
     <div
       ref={ref}
       className={`relative ${className}`}
+      onTouchStart={() => { justTouched.current = true; }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setVisible(false)}
     >
