@@ -13,6 +13,7 @@ export default async function DashboardPage() {
 
   let initialActiveServer: Server | null = null;
   let initialPendingChatroomId: number | null = null;
+  let initialSidebarOpen = true;
   let initialSidebarWidth = 256;
   let initialUserStatus: 'online' | 'away' | 'busy' | 'offline' = 'online';
   let initialStatusExpiresAt: number | null = null;
@@ -29,6 +30,11 @@ export default async function DashboardPage() {
       }
       if (initialActiveServer && sel.type === 'chatroom' && sel.chatroomId) {
         initialPendingChatroomId = sel.chatroomId;
+        if (sel.chatOpen) initialSidebarOpen = false;
+      } else if (sel.type === 'friend' && sel.chatOpen) {
+        initialSidebarOpen = false;
+      } else if (sel.type === 'server') {
+        initialSidebarOpen = true;
       }
     }
     const statusRaw = cookieStore.get('meshyve_user_status')?.value;
@@ -52,6 +58,7 @@ export default async function DashboardPage() {
       initialServers={initialServers}
       initialActiveServer={initialActiveServer}
       initialPendingChatroomId={initialPendingChatroomId}
+      initialSidebarOpen={initialSidebarOpen}
       initialSidebarWidth={initialSidebarWidth}
       initialUserStatus={initialUserStatus}
       initialStatusExpiresAt={initialStatusExpiresAt}

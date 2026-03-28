@@ -8,7 +8,7 @@ import { createServer, resetServerValues } from '@/lib/redux/modules/servers/ser
 interface Props {
   userId: number;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (servers: { serverId: number; name: string; imageUrl?: string | null }[]) => void;
 }
 
 export default function CreateServer({ userId, onClose, onSuccess }: Props) {
@@ -45,7 +45,7 @@ export default function CreateServer({ userId, onClose, onSuccess }: Props) {
     if (file) formData.append('imageUrl', file);
     const result = await dispatch(createServer(formData));
     if (createServer.fulfilled.match(result)) {
-      onSuccess();
+      onSuccess(result.payload as { serverId: number; name: string; imageUrl?: string | null }[]);
     }
   };
 

@@ -52,6 +52,8 @@ interface Props {
   scrollToMessageId?: number | null;
   onScrollHandled?: () => void;
   hideMembers?: boolean;
+  onBack?: () => void;
+  muteNotifications?: boolean;
 }
 
 interface ProfileTarget {
@@ -99,6 +101,8 @@ export default function Chatroom({
   scrollToMessageId,
   onScrollHandled,
   hideMembers,
+  onBack,
+  muteNotifications,
 }: Props) {
   const socket = getSocket();
 
@@ -421,7 +425,7 @@ export default function Chatroom({
           const prev2 = prevMessageCountRef.current;
           if (merged.length > prev2) {
             const newest = merged[merged.length - 1];
-            if (newest.userId !== userId) playPing();
+            if (newest.userId !== userId && !muteNotifications) playPing();
           }
           prevMessageCountRef.current = merged.length;
           return merged;
@@ -831,6 +835,25 @@ export default function Chatroom({
       <div className="relative flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
         <div className="flex h-12 items-center gap-1 border-b border-gray-600 px-2 font-semibold min-w-0">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="md:hidden flex-shrink-0 flex items-center justify-center h-8 w-8 text-gray-400 hover:text-white"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+          )}
           <span className="cursor-pointer text-gray-400 flex items-center" onClick={startCall}>
             {activeChatroomType === 'text' ? (
               '#'

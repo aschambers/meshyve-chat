@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useDragToClose } from '@/lib/useDragToClose';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import Tooltip from '@/components/Tooltip/Tooltip';
@@ -63,6 +64,8 @@ export default function UserProfileModal({
   onAcceptRequest,
   onUnfriend,
 }: Props) {
+  const { containerRef, dragStyle, handleTouchStart, handleTouchMove, handleTouchEnd } =
+    useDragToClose(onClose);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [friendRequest, setFriendRequest] = useState<FriendRequestState | null>(null);
   const [localStatus, setLocalStatus] = useState<'pending-sent' | 'accepted' | 'removed' | null>(
@@ -89,13 +92,21 @@ export default function UserProfileModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-[5%] sm:px-0"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 sm:px-0"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-sm rounded-lg bg-gray-800 shadow-xl"
+        ref={containerRef}
+        className="relative w-full h-[80dvh] rounded-t-2xl overflow-y-auto sm:h-auto sm:rounded-lg sm:max-w-sm bg-gray-800 shadow-xl"
+        style={dragStyle}
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
+        <div className="sm:hidden flex justify-center pt-3 pb-1">
+          <div className="h-1 w-10 rounded-full bg-gray-600" />
+        </div>
         <button
           onClick={onClose}
           className="absolute top-2 right-3 z-10 text-gray-900/60 hover:text-gray-900 text-xl leading-none"

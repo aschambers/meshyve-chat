@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { getSocket } from '@/lib/socket';
+import { playMuteSound, playJoinSound, playLeaveSound } from '@/lib/voiceSounds';
 
 interface Props {
   username: string;
@@ -66,9 +67,12 @@ const VoiceRoom = forwardRef<VoiceRoomHandle, Props>(function VoiceRoom(
   }, [deafenedUsers]);
 
   const localStreamRef = useRef<MediaStream | null>(null);
+  const allMicTracksRef = useRef<Set<MediaStreamTrack>>(new Set());
   const peersRef = useRef<Map<string, RTCPeerConnection>>(new Map());
   const pendingCandidatesRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   const inVoiceRef = useRef(false);
+  const joiningRef = useRef(false);
+  const cancelJoinRef = useRef(false);
   const mutedRef = useRef(false);
   mutedRef.current = muted;
   const onInVoiceChangeRef = useRef(onInVoiceChange);
@@ -163,6 +167,7 @@ const VoiceRoom = forwardRef<VoiceRoomHandle, Props>(function VoiceRoom(
 
     const handleVoiceUserJoined = ({ username: joined }: { username: string }) => {
       setVoiceUsers((prev) => [...new Set([...prev, joined])]);
+      playJoinSound();
     };
 
     const handleVoiceUserLeft = ({ username: left }: { username: string }) => {
@@ -272,47 +277,70 @@ const VoiceRoom = forwardRef<VoiceRoomHandle, Props>(function VoiceRoom(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoJoin]);
 
+  const stopAllMicTracks = useCallback(() => {
+    allMicTracksRef.current.forEach((t) => t.stop());
+    allMicTracksRef.current.clear();
+    localStreamRef.current = null;
+  }, []);
+
   // Clean up when switching away from this voice channel
   useEffect(() => {
     return () => {
+      cancelJoinRef.current = true;
+      joiningRef.current = false;
+      stopAllMicTracks();
       if (inVoiceRef.current) {
         socket.emit('LEAVE_VOICE', { username, chatroomId: activeChatroomId, room });
         peersRef.current.forEach((_, name) => removePeer(name));
-        localStreamRef.current?.getTracks().forEach((t) => t.stop());
-        localStreamRef.current = null;
+        inVoiceRef.current = false;
+        setVoiceUsers([]);
+        setDeafenedUsers({});
         onInVoiceChangeRef.current?.(false);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeChatroomId, socket, username, room, removePeer]);
+  }, [activeChatroomId, socket, username, room, removePeer, stopAllMicTracks]);
 
   const joinVoice = async () => {
-    if (inVoiceRef.current) return;
+    if (inVoiceRef.current || joiningRef.current) return;
+    joiningRef.current = true;
+    cancelJoinRef.current = false;
     setError('');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (cancelJoinRef.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        joiningRef.current = false;
+        return;
+      }
+      stream.getTracks().forEach((t) => allMicTracksRef.current.add(t));
       // Apply pre-join mute/deafen state immediately
       stream.getAudioTracks().forEach((t) => {
         t.enabled = !muted && !deafened;
       });
       localStreamRef.current = stream;
       inVoiceRef.current = true;
+      joiningRef.current = false;
       setVoiceUsers((prev) => [...new Set([...prev, username])]);
       socket.emit('JOIN_VOICE', { username, chatroomId: activeChatroomId, room });
       onInVoiceChangeRef.current?.(true);
+      playJoinSound();
     } catch {
+      joiningRef.current = false;
       setError('Microphone access denied. Please allow microphone access to join voice.');
     }
   };
 
   const leaveVoice = () => {
+    cancelJoinRef.current = true;
+    joiningRef.current = false;
+    stopAllMicTracks();
     socket.emit('LEAVE_VOICE', { username, chatroomId: activeChatroomId, room });
     peersRef.current.forEach((_, name) => removePeer(name));
-    localStreamRef.current?.getTracks().forEach((t) => t.stop());
-    localStreamRef.current = null;
     inVoiceRef.current = false;
     setVoiceUsers((prev) => prev.filter((u) => u !== username));
     onInVoiceChangeRef.current?.(false);
+    playLeaveSound();
   };
 
   const toggleMute = () => {
@@ -323,6 +351,7 @@ const VoiceRoom = forwardRef<VoiceRoomHandle, Props>(function VoiceRoom(
     });
     setMuted(nowMuted);
     onMutedChangeRef.current?.(nowMuted);
+    playMuteSound(nowMuted);
   };
 
   useImperativeHandle(ref, () => ({

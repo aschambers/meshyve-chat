@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useDragToClose } from '@/lib/useDragToClose';
 import type { Friend } from '@/lib/types';
 import type { FriendRequest } from '@/lib/redux/modules/friendRequests/friendRequests';
 import Tooltip from '@/components/Tooltip/Tooltip';
@@ -31,6 +32,8 @@ export default function FriendsModal({
   onAcceptRequest,
   onDeclineRequest,
 }: Props) {
+  const { containerRef, dragStyle, handleTouchStart, handleTouchMove, handleTouchEnd } =
+    useDragToClose(onClose);
   const [tab, setTab] = useState<Tab>('online');
   const [search, setSearch] = useState('');
 
@@ -69,14 +72,21 @@ export default function FriendsModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60"
       onClick={onClose}
     >
       <div
-        className="relative flex w-full max-w-lg flex-col rounded-lg bg-gray-800 shadow-xl overflow-hidden"
-        style={{ maxHeight: '80vh' }}
+        ref={containerRef}
+        className="relative flex w-full flex-col rounded-t-2xl sm:rounded-lg sm:max-w-lg bg-gray-800 shadow-xl overflow-hidden"
+        style={{ height: 'min(80dvh, 100%)', ...dragStyle }}
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
+        <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="h-1 w-10 rounded-full bg-gray-600" />
+        </div>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-700 px-5 py-4">
           <h2 className="text-lg font-bold text-white">Friends</h2>

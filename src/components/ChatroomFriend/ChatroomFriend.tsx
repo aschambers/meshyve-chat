@@ -50,6 +50,7 @@ interface Props {
   onNavigateToDM?: (groupId: string, messageId?: number) => void;
   scrollToMessageId?: number | null;
   onScrollHandled?: () => void;
+  muteNotifications?: boolean;
 }
 
 function friendRoom(groupId: string) {
@@ -75,6 +76,7 @@ export default function ChatroomFriend({
   onNavigateToDM,
   scrollToMessageId,
   onScrollHandled,
+  muteNotifications,
 }: Props) {
   const socket = getSocket();
 
@@ -277,7 +279,7 @@ export default function ChatroomFriend({
     const prev = prevMessageCountRef.current;
     if (prev > 0 && reversed.length > prev) {
       const newest = reversed[reversed.length - 1];
-      if (newest.userId !== userId) playPing();
+      if (newest.userId !== userId && !muteNotifications) playPing();
     }
     prevMessageCountRef.current = reversed.length;
     setMessages(reversed);
@@ -631,7 +633,7 @@ export default function ChatroomFriend({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span
-                        className="font-semibold cursor-pointer hover:underline"
+                        className="font-semibold cursor-pointer hover:underline truncate max-w-[12rem]"
                         style={{
                           color: (item.userId === userId ? nameColor : item.nameColor) || '#fde047',
                         }}
@@ -641,7 +643,7 @@ export default function ChatroomFriend({
                       >
                         {item.username}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-400 flex-shrink-0">
                         {dayjs(item.updatedAt).format('MM/DD/YYYY')}
                       </span>
                       {hover === msgKey && editingMessage?.id !== item.id && (

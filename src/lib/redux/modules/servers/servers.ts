@@ -252,8 +252,12 @@ const serverSlice = createSlice({
     builder.addCase(deleteServer.pending, (s) => {
       s.error = false;
     });
-    builder.addCase(deleteServer.fulfilled, (s) => {
-      s.servers = [];
+    builder.addCase(deleteServer.fulfilled, (s, a) => {
+      const deletedId = (a.meta.arg as { serverId?: number }).serverId;
+      if (deletedId != null) {
+        s.servers = s.servers.filter((sv) => sv.serverId !== deletedId);
+      }
+      s.fetchedAt = null;
     });
     builder.addCase(deleteServer.rejected, (s) => {
       s.error = true;

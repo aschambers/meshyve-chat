@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useDragToClose } from '@/lib/useDragToClose';
 import { useDispatch } from 'react-redux';
 import { AppDispatch, useAppSelector } from '@/lib/redux/store';
 import {
@@ -46,6 +47,8 @@ export default function ServerSettings({
 
   const [tab, setTab] = useState<Tab>('overview');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const { containerRef, dragStyle, handleTouchStart, handleTouchMove, handleTouchEnd } =
+    useDragToClose(onClose);
 
   // Overview edit state
   const fileRef = useRef<HTMLInputElement>(null);
@@ -138,8 +141,19 @@ export default function ServerSettings({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-[5%] sm:px-0">
-      <div className="flex w-full max-w-lg flex-col bg-gray-800 shadow-xl rounded-lg max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center bg-black/60">
+      <div
+        ref={containerRef}
+        className="flex w-full flex-col bg-gray-800 shadow-xl h-[80dvh] rounded-t-2xl sm:rounded-lg sm:max-w-lg sm:max-h-[90vh] sm:h-auto"
+        style={dragStyle}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Drag handle — mobile only */}
+        <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="h-1 w-10 rounded-full bg-gray-600" />
+        </div>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-600 px-6 py-4">
           <h2 className="font-bold text-white">{serverName} — Settings</h2>
@@ -279,12 +293,12 @@ export default function ServerSettings({
                         user.username[0]?.toUpperCase()
                       )}
                     </div>
-                    <span className="flex-1 text-sm">{user.username}</span>
+                    <span className="flex-1 min-w-0 truncate text-sm">{user.username}</span>
                     {canEdit ? (
                       <select
                         value={user.type}
                         onChange={(e) => handleRoleChange(user, e.target.value)}
-                        className="rounded bg-gray-600 px-2 py-1 text-xs text-white"
+                        className="flex-shrink-0 rounded bg-gray-600 px-2 py-1 text-xs text-white"
                       >
                         {ROLES.filter((r) => r !== 'owner').map((r) => (
                           <option key={r} value={r}>
@@ -312,11 +326,11 @@ export default function ServerSettings({
                   <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-600 text-xs font-bold">
                     {user.username[0]?.toUpperCase()}
                   </div>
-                  <span className="flex-1 text-sm">{user.username}</span>
+                  <span className="flex-1 min-w-0 truncate text-sm">{user.username}</span>
                   {isOwner && (
                     <button
                       onClick={() => handleUnban(user)}
-                      className="rounded bg-yellow-500 px-3 py-1 text-xs text-gray-900 hover:bg-yellow-600"
+                      className="flex-shrink-0 rounded bg-yellow-500 px-3 py-1 text-xs text-gray-900 hover:bg-yellow-600"
                     >
                       Unban
                     </button>

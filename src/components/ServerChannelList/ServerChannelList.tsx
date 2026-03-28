@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useDragToClose } from '@/lib/useDragToClose';
 import { useDispatch } from 'react-redux';
 import { AppDispatch, useAppSelector } from '@/lib/redux/store';
 import {
@@ -21,6 +22,7 @@ import Tooltip from '@/components/Tooltip/Tooltip';
 interface Props {
   serverId: number;
   serverName: string;
+  serverImageUrl?: string | null;
   isAdmin: boolean;
   userId: number;
   serverUserList: ServerUser[];
@@ -37,6 +39,7 @@ interface Props {
   onOpenVoiceChat: (chatroom: Chatroom) => void;
   onOpenSettings: () => void;
   onLeaveServer: () => void;
+  dismissFormsToken?: number;
 }
 
 interface DropIndicator {
@@ -47,6 +50,7 @@ interface DropIndicator {
 export default function ServerChannelList({
   serverId,
   serverName,
+  serverImageUrl,
   isAdmin,
   userId,
   serverUserList,
@@ -63,6 +67,7 @@ export default function ServerChannelList({
   onOpenVoiceChat,
   onOpenSettings,
   onLeaveServer,
+  dismissFormsToken,
 }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const { chatrooms } = useAppSelector((s) => s.chatroom);
@@ -70,6 +75,8 @@ export default function ServerChannelList({
 
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
   const [showMenu, setShowMenu] = useState(false);
+  const [showMobileSheet, setShowMobileSheet] = useState(false);
+  const sheet = useDragToClose(() => setShowMobileSheet(false));
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showCreateChannel, setShowCreateChannel] = useState(false);
   const [showCreateCategory, setShowCreateCategory] = useState(false);
@@ -91,6 +98,11 @@ export default function ServerChannelList({
   } | null>(null);
 
   const isOwner = serverUserList.find((u) => u.userId === userId)?.type === 'owner';
+
+  useEffect(() => {
+    setShowCreateChannel(false);
+    setShowCreateCategory(false);
+  }, [serverId, dismissFormsToken]);
 
   const draggedChatroom = useRef<Chatroom | null>(null);
 
@@ -259,25 +271,52 @@ export default function ServerChannelList({
         onMouseDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
       >
-        <div
-          className="flex items-center gap-1 cursor-pointer"
-          onClick={() => setShowMenu((v) => !v)}
-        >
-          <p className="truncate text-sm font-bold">{serverName}</p>
-          {isAdmin && (
-            <span className="text-gray-400 hover:text-white">
-              <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
-                <path
-                  d="M4 6l4 4 4-4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-          )}
+        <div className="flex items-center gap-1">
+          <div
+            className="flex flex-1 min-w-0 items-center gap-1 cursor-pointer"
+            onClick={() => {
+              setShowCreateChannel(false);
+              setShowCreateCategory(false);
+              if (window.innerWidth < 768) {
+                setShowMobileSheet(true);
+              } else {
+                setShowMenu((v) => !v);
+              }
+            }}
+          >
+            <p className="truncate text-sm font-bold">{serverName}</p>
+            {isAdmin && (
+              <span className="hidden md:inline text-gray-400 hover:text-white">
+                <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+                  <path
+                    d="M4 6l4 4 4-4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() => setShowMobileSheet(true)}
+            className="md:hidden flex-shrink-0 text-gray-400 hover:text-white p-1"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
         </div>
 
         {showMenu && (
@@ -287,6 +326,8 @@ export default function ServerChannelList({
                 <button
                   onClick={() => {
                     setShowMenu(false);
+                    setShowCreateChannel(false);
+                    setShowCreateCategory(false);
                     onOpenSettings();
                   }}
                   className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
@@ -479,7 +520,11 @@ export default function ServerChannelList({
               key={c.id}
               chatroom={c}
               active={activeChatroomId === c.id}
-              onSelect={onSelectChatroom}
+              onSelect={(c) => {
+                setShowCreateChannel(false);
+                setShowCreateCategory(false);
+                onSelectChatroom(c);
+              }}
               onDragStart={onDragStart}
               onDragEnd={onDragEnd}
               onDragOver={onDragOverChatroom}
@@ -578,7 +623,11 @@ export default function ServerChannelList({
                       key={c.id}
                       chatroom={c}
                       active={activeChatroomId === c.id}
-                      onSelect={onSelectChatroom}
+                      onSelect={(c) => {
+                        setShowCreateChannel(false);
+                        setShowCreateCategory(false);
+                        onSelectChatroom(c);
+                      }}
                       onDragStart={onDragStart}
                       onDragEnd={onDragEnd}
                       onDragOver={onDragOverChatroom}
@@ -616,6 +665,106 @@ export default function ServerChannelList({
           );
         })}
       </div>
+
+      {/* Mobile bottom sheet */}
+      {showMobileSheet && (
+        <div
+          className="md:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/60"
+          onClick={() => setShowMobileSheet(false)}
+        >
+          <div
+            ref={sheet.containerRef}
+            className="rounded-t-2xl bg-gray-800 pb-8 h-[80dvh] overflow-y-auto"
+            style={sheet.dragStyle}
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={sheet.handleTouchStart}
+            onTouchMove={sheet.handleTouchMove}
+            onTouchEnd={sheet.handleTouchEnd}
+          >
+            {/* Sheet handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="h-1 w-10 rounded-full bg-gray-600" />
+            </div>
+            {/* Server info header */}
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-700">
+              {serverImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={serverImageUrl}
+                  alt={serverName}
+                  className="h-12 w-12 rounded-xl object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="h-12 w-12 rounded-xl bg-gray-600 flex items-center justify-center text-lg font-bold flex-shrink-0">
+                  {serverName?.[0]?.toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="font-bold text-white truncate">{serverName}</p>
+                <p className="text-xs text-gray-400">
+                  {serverUserList.length} {serverUserList.length === 1 ? 'Member' : 'Members'}
+                </p>
+              </div>
+            </div>
+            {/* Actions */}
+            <div className="px-4 pt-3 flex flex-col gap-1">
+              {isAdmin && (
+                <>
+                  <button
+                    onClick={() => {
+                      setShowMobileSheet(false);
+                      setShowInviteModal(true);
+                    }}
+                    className="w-full px-4 py-3 text-left text-sm text-gray-200 hover:bg-gray-700 rounded-lg"
+                  >
+                    Invite People
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMobileSheet(false);
+                      setShowCreateChannel(false);
+                      setShowCreateCategory(false);
+                      onOpenSettings();
+                    }}
+                    className="w-full px-4 py-3 text-left text-sm text-gray-200 hover:bg-gray-700 rounded-lg"
+                  >
+                    Server Settings
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMobileSheet(false);
+                      setShowCreateChannel(true);
+                    }}
+                    className="w-full px-4 py-3 text-left text-sm text-gray-200 hover:bg-gray-700 rounded-lg"
+                  >
+                    Create Channel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMobileSheet(false);
+                      setShowCreateCategory(true);
+                    }}
+                    className="w-full px-4 py-3 text-left text-sm text-gray-200 hover:bg-gray-700 rounded-lg"
+                  >
+                    Create Category
+                  </button>
+                </>
+              )}
+              {!isOwner && (
+                <button
+                  onClick={() => {
+                    setShowMobileSheet(false);
+                    setConfirmLeave(true);
+                  }}
+                  className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-gray-700 rounded-lg"
+                >
+                  Leave Server
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Leave server confirmation modal */}
       {confirmLeave && (

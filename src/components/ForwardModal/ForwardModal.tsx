@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useDragToClose } from '@/lib/useDragToClose';
 import { useAppSelector } from '@/lib/redux/store';
 import { getSocket } from '@/lib/socket';
 import axios from 'axios';
@@ -44,6 +45,8 @@ export default function ForwardModal({
     (f) => f.friendId !== null && f.friendId !== userId
   );
 
+  const { containerRef, dragStyle, handleTouchStart, handleTouchMove, handleTouchEnd } =
+    useDragToClose(onClose);
   const [serverChannels, setServerChannels] = useState<Record<number, Chatroom[]>>({});
   const [note, setNote] = useState('');
   const [search, setSearch] = useState('');
@@ -121,13 +124,21 @@ export default function ForwardModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm rounded-xl bg-gray-800 shadow-xl overflow-hidden"
+        ref={containerRef}
+        className="w-full h-[80dvh] rounded-t-2xl sm:h-auto sm:rounded-xl sm:max-w-sm bg-gray-800 shadow-xl overflow-hidden"
+        style={dragStyle}
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
+        <div className="sm:hidden flex justify-center pt-3 pb-1">
+          <div className="h-1 w-10 rounded-full bg-gray-600" />
+        </div>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-700 px-4 py-3">
           <h3 className="font-semibold text-white">Forward Message</h3>

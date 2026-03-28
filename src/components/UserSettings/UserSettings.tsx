@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
+import { useDragToClose } from '@/lib/useDragToClose';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/lib/redux/store';
 import { userUpdate } from '@/lib/redux/modules/users/users';
@@ -75,6 +76,8 @@ export default function UserSettings({ user, onClose, onLogout, onSaved }: Props
   const [description, setDescription] = useState<string>(user.description ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const { containerRef, dragStyle, handleTouchStart, handleTouchMove, handleTouchEnd } =
+    useDragToClose(onClose);
 
   const storageKey = `user_settings_${user.id}`;
 
@@ -178,13 +181,22 @@ export default function UserSettings({ user, onClose, onLogout, onSaved }: Props
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-[5%] sm:px-0"
+      className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center bg-black/60"
       onClick={onClose}
     >
       <div
-        className="flex flex-col w-[90vw] max-w-md max-h-[90vh] rounded-lg bg-gray-800 shadow-xl overflow-hidden"
+        ref={containerRef}
+        className="flex flex-col w-full h-[80dvh] rounded-t-2xl sm:w-[90vw] sm:max-w-md sm:max-h-[90vh] sm:rounded-lg sm:h-auto bg-gray-800 shadow-xl overflow-hidden"
+        style={dragStyle}
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
+        {/* Drag handle — mobile only */}
+        <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="h-1 w-10 rounded-full bg-gray-600" />
+        </div>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-700 px-6 py-4">
           <h2 className="text-lg font-bold text-white">User Settings</h2>
