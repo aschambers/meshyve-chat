@@ -401,7 +401,7 @@ export default function DashboardClient({
         saveSelection({ type: 'chatroom', serverId: first.serverId, chatroomId: first.id });
       }
     }
-  }, [chatrooms]);
+  }, [chatrooms, activeServer]);
 
   const handleStatusChange = (value: UserStatus, durationMs?: number | null) => {
     statusManualRef.current = value !== 'online';
@@ -918,7 +918,9 @@ export default function DashboardClient({
             </Tooltip>
           </div>
           {/* Channel list — right side of sidebar */}
-          <div className={`flex flex-col overflow-hidden ${isLoadingChatroom ? 'w-0' : 'flex-1'}`}>
+          <div
+            className={`flex flex-col overflow-hidden ${isLoadingChatroom ? 'md:w-0' : 'flex-1'}`}
+          >
             {/* Scrollable content area */}
             <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
               {activeServer ? (
@@ -1471,7 +1473,7 @@ export default function DashboardClient({
         onTouchEnd={handleMainTouchEnd}
       >
         {isLoadingChatroom ? (
-          <div className="flex flex-1 items-center justify-center">
+          <div className="hidden md:flex flex-1 items-center justify-center">
             <div className="h-16 w-16 animate-spin rounded-full border-4 border-gray-600 border-t-yellow-400" />
           </div>
         ) : (
