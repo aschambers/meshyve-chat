@@ -5,7 +5,7 @@ import { ReactNode, useState, useRef } from 'react';
 interface Props {
   text: string;
   children: ReactNode;
-  position?: 'top' | 'bottom' | 'right';
+  position?: 'top' | 'top-left' | 'bottom' | 'right' | 'left';
   className?: string;
 }
 
@@ -27,6 +27,10 @@ export default function Tooltip({ text, children, position = 'top', className = 
       setCoords({ x: rect.right + 8, y: rect.top + rect.height / 2 });
     } else if (position === 'bottom') {
       setCoords({ x: rect.left + rect.width / 2, y: rect.bottom + 6 });
+    } else if (position === 'left') {
+      setCoords({ x: rect.left - 8, y: rect.top + rect.height / 2 });
+    } else if (position === 'top-left') {
+      setCoords({ x: rect.right, y: rect.top - 6 });
     } else {
       setCoords({ x: rect.left + rect.width / 2, y: rect.top - 6 });
     }
@@ -38,7 +42,11 @@ export default function Tooltip({ text, children, position = 'top', className = 
       ? { left: coords.x, top: coords.y, transform: 'translateY(-50%)' }
       : position === 'bottom'
         ? { left: coords.x, top: coords.y, transform: 'translateX(-50%)' }
-        : { left: coords.x, top: coords.y, transform: 'translate(-50%, -100%)' };
+        : position === 'left'
+          ? { left: coords.x, top: coords.y, transform: 'translate(-100%, -50%)' }
+          : position === 'top-left'
+            ? { left: coords.x, top: coords.y, transform: 'translate(-100%, -100%)' }
+            : { left: coords.x, top: coords.y, transform: 'translate(-50%, -100%)' };
 
   return (
     <div
