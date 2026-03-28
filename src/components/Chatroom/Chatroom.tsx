@@ -1468,7 +1468,7 @@ export default function Chatroom({
           </div>
           <textarea
             ref={messageInputRef}
-            enterKeyHint={isMobile ? 'newline' : 'send'}
+            enterKeyHint={isMobile ? 'enter' : 'send'}
             rows={1}
             className="flex-1 rounded bg-gray-600 px-3 py-2 text-sm outline-none resize-none disabled:opacity-50 disabled:cursor-not-allowed leading-5"
             placeholder={

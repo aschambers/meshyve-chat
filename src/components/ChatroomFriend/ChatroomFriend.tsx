@@ -922,7 +922,7 @@ export default function ChatroomFriend({
           )}
         </div>
         <textarea
-          enterKeyHint={isMobile ? 'newline' : 'send'}
+          enterKeyHint={isMobile ? 'enter' : 'send'}
           rows={1}
           className="flex-1 rounded bg-gray-600 px-3 py-2 text-sm outline-none resize-none leading-5"
           placeholder="Send a message!"
